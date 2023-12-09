@@ -24,12 +24,15 @@ namespace tustr
         using iterator = const CharT*;
         using const_iterator = iterator;
         using view_type = std::basic_string_view<CharT, Traits>;
+        using std_string_type = std::basic_string<CharT, Traits>;
 
         static constexpr std::size_t npos = -1;
 
         constexpr basic_fstring() noexcept {}
 
-        // リテラルからの構築
+        /**
+         * 文字列リテラルから basic_fstring を生成
+        */
         constexpr basic_fstring(const value_type (&str_literal)[N + 1]) noexcept
         {
             for (auto i = 0; i < N + 1; i++)
@@ -38,8 +41,6 @@ namespace tustr
             // 必ず終端文字が入るようにする
             _buf[N] = value_type();
         }
-
-        // コピー・ムーブはデフォルト
 
         constexpr iterator begin() const noexcept { return &_buf[0]; }
         constexpr iterator end() const noexcept { return begin() + N; }
@@ -54,7 +55,15 @@ namespace tustr
         constexpr std::size_t length() const noexcept { return N; }
         [[nodiscard]] constexpr bool empty() const noexcept { return N == 0; }
 
+        /**
+         * basic_string_view への型キャスト
+        */
         constexpr operator view_type() const noexcept { return view_type(_buf); }
+
+        /**
+         * basic_string への型キャスト
+        */
+        constexpr operator std_string_type() const noexcept { return std_string_type(_buf); }
 
         constexpr const value_type& operator[](std::size_t pos) const
         {
@@ -79,28 +88,59 @@ namespace tustr
         }
         constexpr const value_type* data() const noexcept { return _buf; }
 
+        /**
+         * 部分文字列を取得
+        */
         template <std::size_t Start = 0, std::size_t Len = npos>
         requires (Start <= N)
         constexpr auto substr() const noexcept
         {
             constexpr std::size_t result_size = std::min<std::size_t>(N - Start, Len);
-            value_type new_buf[result_size + 1] = {};
-            for (int i = 0; i < result_size; i++) new_buf[i] = _buf[Start + i];
-            return same_char_fstring<result_size>(new_buf);
+            return make_by_cstr<result_size>(&_buf[Start]);
         }
 
+        /**
+         * 先頭から指定の文字数削る
+        */
         template <std::size_t Size>
         requires (Size <= N)
         constexpr auto remove_prefix() const noexcept { return substr<Size>(); }
 
+        /**
+         * 最後尾から指定の文字数削る
+        */
         template <std::size_t Size>
         requires (Size <= N)
         constexpr auto remove_suffix() const noexcept { return substr<0, N - Size>(); }
+
+        /**
+         * 複数の basic_fstring を結合
+        */
+        template <std::size_t... Sizes>
+        constexpr auto concat(const same_char_fstring<Sizes>&... strs) const noexcept
+        {
+            constexpr std::size_t result_size = N + (Sizes + ...);
+            auto s = std_string_type(_buf) + (std_string_type(strs) + ...);
+            return make_by_cstr<result_size>(s.c_str());
+        }
 
         constexpr int compare(view_type sv) const noexcept { return view_type(this).compare(sv); }
 
         // 直接呼び出すのは推奨しない
         value_type _buf[N + 1] = {};
+
+    private:
+        /**
+         * 文字列配列から固定長文字列を生成
+        */
+        template <std::size_t Size>
+        constexpr auto make_by_cstr(const value_type* s) const noexcept
+        {
+            value_type new_buf[Size + 1] = {};
+            for (auto i = 0; s[i] != value_type() && i < Size; i++)
+                new_buf[i] = s[i];
+            return same_char_fstring<Size>(new_buf);
+        }
     };
 
     // 推論補助

@@ -19,3 +19,13 @@ TEST(TustrFstringTest, ConstructorTest)
     ASSERT_STREQ(fstr4.data(), "efgh");
     ASSERT_STREQ(fstr5.data(), L"hijklmn");
 }
+
+TEST(TustrFstringTest, MemberFunctionsTest)
+{
+    constexpr tustr::fstring fstr1 {"abcdefg"};
+    constexpr tustr::fstring fstr2 {"hijklm"};
+    constexpr tustr::fstring fstr3 {"nopqrstu"};
+    constexpr auto fstr4 = fstr1.concat(fstr2, fstr3);
+    
+    ASSERT_STREQ(fstr4.data(), "abcdefghijklmnopqrstu");
+}
