@@ -17,6 +17,10 @@ namespace tustr
         }
 
     public:
+        // -------------------------------
+        // メンバ型
+        // -------------------------------
+
         template <std::size_t Size>
         using same_char_fstring = basic_fstring<Size, CharT, Traits>;
         using value_type = CharT;
@@ -26,7 +30,18 @@ namespace tustr
         using view_type = std::basic_string_view<CharT, Traits>;
         using std_string_type = std::basic_string<CharT, Traits>;
 
+        // -------------------------------
+        // メンバ変数
+        // -------------------------------
+
         static constexpr std::size_t npos = -1;
+
+        // 直接呼び出すのは推奨しない
+        value_type _buf[N + 1] = {};
+
+        // -------------------------------
+        // コンストラクタ
+        // -------------------------------
 
         constexpr basic_fstring() noexcept {}
 
@@ -42,6 +57,19 @@ namespace tustr
             _buf[N] = value_type();
         }
 
+        /**
+         * 文字から basic_fstring を生成
+        */
+        constexpr basic_fstring(value_type c) noexcept
+        {
+            static_assert(N == 1, "Only size is 1.");
+            _buf[0] = c;
+        }
+
+        // -------------------------------
+        // イテレータ
+        // -------------------------------
+
         constexpr iterator begin() const noexcept { return &_buf[0]; }
         constexpr iterator end() const noexcept { return begin() + N; }
         constexpr const_iterator cbegin() const noexcept { return begin(); }
@@ -51,9 +79,18 @@ namespace tustr
         constexpr auto crbegin() const noexcept { return std::reverse_iterator(cend()); }
         constexpr auto crend() const noexcept { return std::reverse_iterator(cbegin()); }
 
+        // -------------------------------
+        // 状態取得・判定
+        // -------------------------------
+
         constexpr std::size_t size() const noexcept { return N; }
         constexpr std::size_t length() const noexcept { return N; }
         [[nodiscard]] constexpr bool empty() const noexcept { return N == 0; }
+        constexpr int compare(view_type sv) const noexcept { return view_type(this).compare(sv); }
+
+        // -------------------------------
+        // 型キャスト
+        // -------------------------------
 
         /**
          * basic_string_view への型キャスト
@@ -64,6 +101,10 @@ namespace tustr
          * basic_string への型キャスト
         */
         constexpr operator std_string_type() const noexcept { return std_string_type(_buf); }
+
+        // -------------------------------
+        // 要素アクセス
+        // -------------------------------
 
         constexpr const value_type& operator[](std::size_t pos) const
         {
@@ -87,6 +128,10 @@ namespace tustr
             return _buf[N - 1];
         }
         constexpr const value_type* data() const noexcept { return _buf; }
+
+        // -------------------------------
+        // 文字列操作
+        // -------------------------------
 
         /**
          * 部分文字列を取得
@@ -124,11 +169,6 @@ namespace tustr
             return make_by_cstr<result_size>(s.c_str());
         }
 
-        constexpr int compare(view_type sv) const noexcept { return view_type(this).compare(sv); }
-
-        // 直接呼び出すのは推奨しない
-        value_type _buf[N + 1] = {};
-
     private:
         /**
          * 文字列配列から固定長文字列を生成
@@ -143,10 +183,23 @@ namespace tustr
         }
     };
 
+    // -------------------------------
     // 推論補助
+    // -------------------------------
+
+    /**
+     * 文字列リテラルによるインスタンス化用の推論補助
+    */
     template <std::size_t N, class CharT>
     basic_fstring(const CharT(&)[N])
         -> basic_fstring<N - 1, CharT, std::char_traits<CharT>>;
+
+    /**
+     * 文字リテラルによるインスタンス化用の推論補助
+    */
+    template <class CharT>
+    basic_fstring(CharT)
+        -> basic_fstring<1, CharT, std::char_traits<CharT>>;
 }
 
 #endif
