@@ -29,14 +29,27 @@ TEST(Tustrbasic_fstringTest, ConstructorTest)
 
     constexpr tustr::fstring cfstr1 = "123";
     constexpr tustr::fstring cfstr2 = {};
+    constexpr tustr::fstring cfstr3 = '1';
     constexpr tustr::u8fstring u8fstr1 = u8"123";
     constexpr tustr::u8fstring u8fstr2 = {};
+    constexpr tustr::u8fstring u8fstr3 = u8'1';
     constexpr tustr::u16fstring u16fstr1 = u"123";
     constexpr tustr::u16fstring u16fstr2 = {};
+    constexpr tustr::u16fstring u16fstr3 = u'1';
     constexpr tustr::u32fstring u32fstr1 = U"123";
     constexpr tustr::u32fstring u32fstr2 = {};
+    constexpr tustr::u32fstring u32fstr3 = U'1';
     constexpr tustr::wfstring wfstr1 = L"123";
     constexpr tustr::wfstring wfstr2 = {};
+    constexpr tustr::wfstring wfstr3 = L'1';
+
+    ASSERT_STREQ(cfstr1.data(), "123");
+    ASSERT_STREQ(cfstr2.data(), "");
+    ASSERT_STREQ(cfstr3.data(), "1");
+    ASSERT_STREQ(wfstr1.data(), L"123");
+    ASSERT_STREQ(wfstr2.data(), L"");
+    ASSERT_STREQ(wfstr3.data(), L"1");
+
 }
 
 TEST(Tustrbasic_fstringTest, MemberFunctionsTest)

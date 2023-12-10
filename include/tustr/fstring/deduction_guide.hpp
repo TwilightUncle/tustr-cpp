@@ -31,22 +31,27 @@ namespace tustr
 
     template <std::size_t N>
     fstring(const char(&)[N]) -> fstring<N - 1>;
+    fstring(char) -> fstring<1>;
     fstring() -> fstring<0>;
 
     template <std::size_t N>
     u8fstring(const char8_t(&)[N]) -> u8fstring<N - 1>;
+    u8fstring(char8_t) -> u8fstring<1>;
     u8fstring() -> u8fstring<0>;
 
     template <std::size_t N>
     u16fstring(const char16_t(&)[N]) -> u16fstring<N - 1>;
+    u16fstring(char16_t) -> u16fstring<1>;
     u16fstring() -> u16fstring<0>;
 
     template <std::size_t N>
     u32fstring(const char32_t(&)[N]) -> u32fstring<N - 1>;
+    u32fstring(char32_t) -> u32fstring<1>;
     u32fstring() -> u32fstring<0>;
 
     template <std::size_t N>
     wfstring(const wchar_t(&)[N]) -> wfstring<N - 1>;
+    wfstring(wchar_t) -> wfstring<1>;
     wfstring() -> wfstring<0>;
 }
 
