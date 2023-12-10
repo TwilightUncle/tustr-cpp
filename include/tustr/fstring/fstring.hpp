@@ -1,17 +1,18 @@
-#ifndef TUSTR_INCLUDE_GUARD_TUSTR_FSTRING_BASIC_FSTRING_HPP
-#define TUSTR_INCLUDE_GUARD_TUSTR_FSTRING_BASIC_FSTRING_HPP
+#ifndef TUSTR_INCLUDE_GUARD_TUSTR_FSTRING_FSTRING_HPP
+#define TUSTR_INCLUDE_GUARD_TUSTR_FSTRING_FSTRING_HPP
 
 #include <stdexcept>
 #include <string_view>
 
 namespace tustr
 {
-    // 固定長文字列
-    // 文字列操作メンバ関数は全てオブジェクトを新規作成する
+    // 固定長文字列。
+    // 文字列操作メンバ関数は全て新規オブジェクト作成する。
+    // 実行時において、メンバ変数 _buf に直接触れない限りイミュータブル。
     template <std::size_t N, class CharT, class Traits = std::char_traits<CharT>>
-    class basic_fstring
+    class fstring
     {
-        constexpr void test_not_empty() const noexcept
+        static constexpr void test_not_empty() noexcept
         {
             static_assert(N > 0, "Cannot be used because it is empty.");
         }
@@ -21,8 +22,12 @@ namespace tustr
         // メンバ型
         // -------------------------------
 
+        /**
+         * サイズだけ異なる fstring
+        */
         template <std::size_t Size>
-        using same_char_fstring = basic_fstring<Size, CharT, Traits>;
+        using same_char_fstring = fstring<Size, CharT, Traits>;
+
         using value_type = CharT;
         using traits_type = Traits;
         using iterator = const CharT*;
@@ -43,12 +48,12 @@ namespace tustr
         // コンストラクタ
         // -------------------------------
 
-        constexpr basic_fstring() noexcept {}
+        constexpr fstring() noexcept {}
 
         /**
-         * 文字列リテラルから basic_fstring を生成
+         * 文字列リテラルから fstring を生成
         */
-        constexpr basic_fstring(const value_type (&str_literal)[N + 1]) noexcept
+        constexpr fstring(const value_type (&str_literal)[N + 1]) noexcept
         {
             for (auto i = 0; i < N + 1; i++)
                 this->_buf[i] = str_literal[i];
@@ -58,9 +63,9 @@ namespace tustr
         }
 
         /**
-         * 文字から basic_fstring を生成
+         * 文字から fstring を生成
         */
-        constexpr basic_fstring(value_type c) noexcept
+        constexpr fstring(value_type c) noexcept
         {
             static_assert(N == 1, "Only size is 1.");
             _buf[0] = c;
@@ -100,7 +105,7 @@ namespace tustr
         /**
          * basic_string への型キャスト
         */
-        constexpr operator std_string_type() const noexcept { return std_string_type(_buf); }
+        constexpr operator std_string_type() const { return std_string_type(_buf); }
 
         // -------------------------------
         // 要素アクセス
@@ -114,7 +119,7 @@ namespace tustr
         constexpr const value_type& at(std::size_t pos) const
         {
             test_not_empty();
-            if (pos >= N) throw std::out_of_range;
+            if (pos >= N) throw std::out_of_range("Specified 'pos' is not exists index.");
             return _buf[pos];
         }
         constexpr const value_type& front() const noexcept
@@ -134,7 +139,7 @@ namespace tustr
         // -------------------------------
 
         /**
-         * 部分文字列を取得
+         * 部分文字列を返却
         */
         template <std::size_t Start = 0, std::size_t Len = npos>
         requires (Start <= N)
@@ -145,29 +150,98 @@ namespace tustr
         }
 
         /**
-         * 先頭から指定の文字数削る
+         * 先頭から指定の文字数削った文字列を返却
         */
         template <std::size_t Size>
         requires (Size <= N)
         constexpr auto remove_prefix() const noexcept { return substr<Size>(); }
 
         /**
-         * 最後尾から指定の文字数削る
+         * 最後尾から指定の文字数削った文字列を返却
         */
         template <std::size_t Size>
         requires (Size <= N)
         constexpr auto remove_suffix() const noexcept { return substr<0, N - Size>(); }
 
         /**
-         * 複数の basic_fstring を結合
+         * 指定の位置に固定長文字列、文字列リテラル、文字を挿入した文字列を返却。
+         * 引数 pos > N の場合、pos の値は N に書き換えられる。
         */
-        template <std::size_t... Sizes>
-        constexpr auto concat(const same_char_fstring<Sizes>&... strs) const noexcept
+        template <std::size_t Size>
+        constexpr auto insert(std::size_t pos, const same_char_fstring<Size>& s) const noexcept
         {
-            constexpr std::size_t result_size = N + (Sizes + ...);
-            auto s = std_string_type(_buf) + (std_string_type(strs) + ...);
-            return make_by_cstr<result_size>(s.c_str());
+            constexpr auto new_size = N + Size;
+            // 未定義領域を踏まないように
+            const auto _pos = (std::min)(pos, N);
+            value_type new_buf[new_size + 1] = {};
+            for (int i = 0; i < _pos; i++) new_buf[i] = _buf[i];
+            for (int i = 0; i < Size; i++) new_buf[i + _pos] = s[i];
+            for (int i = _pos; i < N; i++) new_buf[i + Size] = _buf[i];
+            return same_char_fstring<new_size>(new_buf);
         }
+        template <std::size_t Size>
+        requires (Size > 0)
+        constexpr auto insert(std::size_t pos, const value_type (&str_literal)[Size]) const noexcept
+        { return insert(pos, same_char_fstring<Size - 1>(str_literal)); }
+        constexpr auto insert(std::size_t pos, value_type c) const noexcept { return insert(pos, same_char_fstring<1>(c)); }
+
+        /**
+         * 複数の fstring を結合した文字列を返却
+        */
+        template <std::size_t Size, std::size_t... Sizes>
+        constexpr auto concat(
+            const same_char_fstring<Size>& str,
+            const same_char_fstring<Sizes>&... strs
+        ) const noexcept {
+            return insert(N, str).concat(strs...);
+        }
+        constexpr auto concat() const noexcept { return fstring(*this); }
+
+        /**
+         * 固定長文字列、文字列リテラル、文字を末尾に追加した文字列を返却
+        */
+        template <std::size_t Size>
+        constexpr auto append(const same_char_fstring<Size>& s) const noexcept { return concat(s); }
+        template <std::size_t Size>
+        requires (Size > 0)
+        constexpr auto append(const value_type (&str_literal)[Size]) const noexcept
+        { return append(same_char_fstring<Size - 1>(str_literal)); }
+        constexpr auto append(value_type c) const noexcept { return append(same_char_fstring<1>(c)); }
+
+        /**
+         * 末尾に一文字追加した文字列を返却
+        */
+        constexpr auto push_back(value_type c) const noexcept { return append(c); }
+
+        /**
+         * 末尾の一文字を削除
+        */
+        constexpr auto pop_back() const noexcept
+        {
+            test_not_empty();
+            return remove_suffix<1>();
+        }
+        
+        /**
+         * 指定範囲の文字列を削除した文字列を返却
+        */
+        template <std::size_t Pos, std::size_t Len>
+        requires (Pos <= N)
+        constexpr auto erase() const noexcept
+        {
+            constexpr std::size_t erase_end_pos = std::min<std::size_t>(N, Pos + Len);
+            return substr<0, Pos>()
+                .concat(substr<erase_end_pos>());
+        }
+
+        // 型として一貫できないと思われるため、下記メンバ関数の実装はなし。
+        // 外部関数として実行する想定
+        // * replace 
+        //     文字が存在する場合置き換える。
+        //     格納している文字列の内容によって結果の文字列長が変動してしまう。
+        // * split
+        //     指定の文字列により、元の文字を分割する。
+        //     格納している文字列の内容によって結果の型が変動してしまう。
 
     private:
         /**
@@ -182,24 +256,6 @@ namespace tustr
             return same_char_fstring<Size>(new_buf);
         }
     };
-
-    // -------------------------------
-    // 推論補助
-    // -------------------------------
-
-    /**
-     * 文字列リテラルによるインスタンス化用の推論補助
-    */
-    template <std::size_t N, class CharT>
-    basic_fstring(const CharT(&)[N])
-        -> basic_fstring<N - 1, CharT, std::char_traits<CharT>>;
-
-    /**
-     * 文字リテラルによるインスタンス化用の推論補助
-    */
-    template <class CharT>
-    basic_fstring(CharT)
-        -> basic_fstring<1, CharT, std::char_traits<CharT>>;
 }
 
 #endif
