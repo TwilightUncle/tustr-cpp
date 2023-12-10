@@ -1,5 +1,5 @@
-#ifndef TUSTR_INCLUDE_GUARD_TUSTR_FSTRING_FSTRING_HPP
-#define TUSTR_INCLUDE_GUARD_TUSTR_FSTRING_FSTRING_HPP
+#ifndef TUSTR_INCLUDE_GUARD_TUSTR_FSTRING_BASIC_FSTRING_HPP
+#define TUSTR_INCLUDE_GUARD_TUSTR_FSTRING_BASIC_FSTRING_HPP
 
 #include <stdexcept>
 #include <string_view>
@@ -10,7 +10,7 @@ namespace tustr
     // 文字列操作メンバ関数は全て新規オブジェクト作成する。
     // 実行時において、メンバ変数 _buf に直接触れない限りイミュータブル。
     template <std::size_t N, class CharT, class Traits = std::char_traits<CharT>>
-    class fstring
+    class basic_fstring
     {
         static constexpr void test_not_empty() noexcept
         {
@@ -23,10 +23,10 @@ namespace tustr
         // -------------------------------
 
         /**
-         * サイズだけ異なる fstring
+         * サイズだけ異なる basic_fstring
         */
         template <std::size_t Size>
-        using same_char_fstring = fstring<Size, CharT, Traits>;
+        using same_char_fstring = basic_fstring<Size, CharT, Traits>;
 
         using value_type = CharT;
         using traits_type = Traits;
@@ -48,12 +48,12 @@ namespace tustr
         // コンストラクタ
         // -------------------------------
 
-        constexpr fstring() noexcept {}
+        constexpr basic_fstring() noexcept {}
 
         /**
-         * 文字列リテラルから fstring を生成
+         * 文字列リテラルから basic_fstring を生成
         */
-        constexpr fstring(const value_type (&str_literal)[N + 1]) noexcept
+        constexpr basic_fstring(const value_type (&str_literal)[N + 1]) noexcept
         {
             for (auto i = 0; i < N + 1; i++)
                 this->_buf[i] = str_literal[i];
@@ -63,9 +63,9 @@ namespace tustr
         }
 
         /**
-         * 文字から fstring を生成
+         * 文字から basic_fstring を生成
         */
-        constexpr fstring(value_type c) noexcept
+        constexpr basic_fstring(value_type c) noexcept
         {
             static_assert(N == 1, "Only size is 1.");
             _buf[0] = c;
@@ -186,7 +186,7 @@ namespace tustr
         constexpr auto insert(std::size_t pos, value_type c) const noexcept { return insert(pos, same_char_fstring<1>(c)); }
 
         /**
-         * 複数の fstring を結合した文字列を返却
+         * 複数の basic_fstring を結合した文字列を返却
         */
         template <std::size_t Size, std::size_t... Sizes>
         constexpr auto concat(
@@ -195,7 +195,7 @@ namespace tustr
         ) const noexcept {
             return insert(N, str).concat(strs...);
         }
-        constexpr auto concat() const noexcept { return fstring(*this); }
+        constexpr auto concat() const noexcept { return basic_fstring(*this); }
 
         /**
          * 固定長文字列、文字列リテラル、文字を末尾に追加した文字列を返却

@@ -24,5 +24,5 @@ cmake --build .
 ctest -C Debug
 ```
 
-詳細なテスト結果は`path\to\tustr-cpp\build\Testing\Temporary\LastTest.log`に出力されます。
+詳細なテスト結果は`path\to\tustr-cpp\build\Testing\Temporary\LastTest.log`に出力されます。  
 テストが失敗した際の詳細を確認する場合は上記ファイルを参照ください。
