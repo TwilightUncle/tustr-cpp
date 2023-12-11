@@ -73,6 +73,14 @@ TEST(TustrFstringTest, MemberFunctionsTest)
         .erase<3, 4>();
 
     ASSERT_STREQ(wfstr1.data(), L"345de");
+
+    constexpr auto case1 = *std::find(fstr1.begin(), fstr1.end(), 'd');
+    auto case2 = std::count(wfstr1.rbegin(), wfstr1.rend(), L'1');
+    auto case3 = std::count(wfstr1.crbegin(), wfstr1.crend(), L'd');
+
+    ASSERT_EQ(case1, 'd');
+    ASSERT_EQ(case2, 0);
+    ASSERT_EQ(case3, 1);
 }
 
 TEST(TustrFstringTest, FunctionTest)

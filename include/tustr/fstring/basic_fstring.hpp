@@ -88,9 +88,9 @@ namespace tustr
         // 状態取得・判定
         // -------------------------------
 
-        constexpr std::size_t size() const noexcept { return N; }
-        constexpr std::size_t length() const noexcept { return N; }
-        [[nodiscard]] constexpr bool empty() const noexcept { return N == 0; }
+        static constexpr std::size_t size() noexcept { return N; }
+        static constexpr std::size_t length() noexcept { return N; }
+        [[nodiscard]] static constexpr bool empty() noexcept { return N == 0; }
         constexpr int compare(view_type sv) const noexcept { return view_type(_buf).compare(sv); }
 
         // -------------------------------
