@@ -4,7 +4,7 @@
 template <tustr::basic_fstring S>
 struct test_struct { static constexpr auto value = S; };
 
-TEST(Tustrbasic_fstringTest, ConstructorTest)
+TEST(TustrFstringTest, ConstructorTest)
 {
     tustr::basic_fstring fstr1 {""};
     tustr::basic_fstring fstr2 = L"abcdef";
@@ -49,10 +49,9 @@ TEST(Tustrbasic_fstringTest, ConstructorTest)
     ASSERT_STREQ(wfstr1.data(), L"123");
     ASSERT_STREQ(wfstr2.data(), L"");
     ASSERT_STREQ(wfstr3.data(), L"1");
-
 }
 
-TEST(Tustrbasic_fstringTest, MemberFunctionsTest)
+TEST(TustrFstringTest, MemberFunctionsTest)
 {
     constexpr tustr::basic_fstring fstr1 {"abcdefg"};
     constexpr tustr::basic_fstring fstr2 {"hijklm"};
@@ -74,4 +73,34 @@ TEST(Tustrbasic_fstringTest, MemberFunctionsTest)
         .erase<3, 4>();
 
     ASSERT_STREQ(wfstr1.data(), L"345de");
+}
+
+TEST(TustrFstringTest, FunctionTest)
+{
+    constexpr auto fstr1 = tustr::basic_fstring{"123"} + tustr::fstring{"456"};
+    constexpr auto fstr2 = tustr::wfstring{L"123"} + tustr::basic_fstring{L"456"};
+    constexpr auto fstr3 = tustr::fstring{"123"} + "456";
+    constexpr auto fstr4 = "123" + tustr::fstring{"456"};
+    constexpr auto fstr5 = '1' + tustr::fstring{"234"} + "56";
+    constexpr auto fstr6 = tustr::fstring{"123"} + '4' + "56" + '7';
+
+    ASSERT_STREQ(fstr1.data(), "123456");
+    ASSERT_STREQ(fstr2.data(), L"123456");
+    ASSERT_STREQ(fstr3.data(), "123456");
+    ASSERT_STREQ(fstr4.data(), "123456");
+    ASSERT_STREQ(fstr5.data(), "123456");
+    ASSERT_STREQ(fstr6.data(), "1234567");
+    
+    constexpr auto case1 = tustr::eq_fstring_char_v<tustr::fstring<2>, wchar_t>;
+    constexpr auto case2 = tustr::eq_fstring_char_v<tustr::fstring<3>, char>;
+
+    constexpr auto case3 = tustr::is_same_char_fstring_v<tustr::fstring<2>, int>;
+    constexpr auto case4 = tustr::is_same_char_fstring_v<tustr::fstring<2>, tustr::wfstring<4>>;
+    constexpr auto case5 = tustr::is_same_char_fstring_v<tustr::fstring<2>, tustr::fstring<3>>;
+
+    ASSERT_FALSE(case1);
+    ASSERT_TRUE(case2);
+    ASSERT_FALSE(case3);
+    ASSERT_FALSE(case4);
+    ASSERT_TRUE(case5);
 }

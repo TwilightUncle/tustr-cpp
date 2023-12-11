@@ -91,7 +91,7 @@ namespace tustr
         constexpr std::size_t size() const noexcept { return N; }
         constexpr std::size_t length() const noexcept { return N; }
         [[nodiscard]] constexpr bool empty() const noexcept { return N == 0; }
-        constexpr int compare(view_type sv) const noexcept { return view_type(this).compare(sv); }
+        constexpr int compare(view_type sv) const noexcept { return view_type(_buf).compare(sv); }
 
         // -------------------------------
         // 型キャスト

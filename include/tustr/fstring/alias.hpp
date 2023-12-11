@@ -5,6 +5,9 @@
 
 namespace tustr
 {
+    // using による型エイリアスだとうまく推論が働かなかったため、
+    // 継承により、文字フォーマットを具体化
+
     template <std::size_t N>
     class fstring : public basic_fstring<N, char> { using basic_fstring<N, char>::basic_fstring; };
     template <std::size_t N>

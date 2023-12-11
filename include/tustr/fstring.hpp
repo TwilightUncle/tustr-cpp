@@ -6,5 +6,6 @@
 #endif
 
 #include TUSTR_COMMON_INCLUDE(fstring/deduction_guide.hpp)
+#include TUSTR_COMMON_INCLUDE(fstring/function.hpp)
 
 #endif
