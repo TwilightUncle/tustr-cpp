@@ -6,5 +6,6 @@
 #endif
 
 #include TUSTR_COMMON_INCLUDE(fstring.hpp)
+#include TUSTR_COMMON_INCLUDE(convert.hpp)
 
 #endif

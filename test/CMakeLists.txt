@@ -24,6 +24,7 @@ if (CMAKE_PROJECT_NAME STREQUAL "tustr")
     # ソース列挙
     target_sources(tustrtest PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/fstring_test.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/convert_test.cpp
     )
 
     target_include_directories(tustrtest PRIVATE ${tustr_SOURCE_DIR}/include)
