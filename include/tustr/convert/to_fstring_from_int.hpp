@@ -52,7 +52,6 @@ namespace tustr
     requires (V >= 0 && (Hex == 2 || Hex == 8 || Hex == 10 || Hex == 16))
     constexpr auto to_fstring_from_int()
     {
-        // constexpr auto hex_prefix = get_hex_prefix<Hex, CharT, Traits>();
         constexpr std::size_t len = get_digits_from_int<Hex>(V);
         constexpr auto code_0 = TUSTR_FUNC_RETURN_STR_LITERAL(1, CharT, Traits, '0')[0];
         constexpr auto code_A = TUSTR_FUNC_RETURN_STR_LITERAL(1, CharT, Traits, 'A')[0];
