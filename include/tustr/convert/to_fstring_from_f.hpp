@@ -45,9 +45,16 @@ namespace tustr
 
         T _v{};
         bit_store_t _bits{};
+
+        // メモリの内容を抽出したもの
         int _sign{};
         bit_store_t _exponent{};
         bit_store_t _mantissa{};
+
+        // 計算過程用
+        bit_store_t _mf{};
+        int _e2{};
+        int _e10{};
 
         constexpr float_value_info(T v) noexcept
             : _v(v)
@@ -55,21 +62,21 @@ namespace tustr
             , _sign(bool(_bits & sign_mask) ? -1 : 1)
             , _exponent((_bits & exponent_mask) >> mantissa_digits)
             , _mantissa(_bits & mantissa_mask)
+            , _mf((bit_store_t(bool(_exponent)) << mantissa_digits) | _mantissa)
+            , _e2(get_exponent2() - mantissa_digits - 2)
+            , _e10(int(_e2 < 0) * _e2)
         {}
 
         constexpr T get_value() const noexcept { return _v; }
-        constexpr bit_store_t get_m2() const noexcept
-        {
-            return !_exponent
-                ? _mantissa
-                : (bit_store_t(1) << mantissa_digits) | _mantissa;
-        }
-        constexpr auto get_e2() const noexcept
+        constexpr auto get_exponent2() const noexcept
         {
             return !_exponent
                 ? int_t(1) - exponent_bias
                 : int_t(_exponent) - exponent_bias;
         }
+        constexpr bool is_finite() const noexcept { return (_bits & exponent_mask) != exponent_mask; }
+        constexpr bool is_nan() const noexcept { return !is_finite() && _mantissa != 0; }
+        constexpr bool is_inf() const noexcept { return !is_finite() && _mantissa == 0; }
     };
 }
 

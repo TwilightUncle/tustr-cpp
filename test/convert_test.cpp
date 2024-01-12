@@ -22,8 +22,13 @@ TEST(TustrConvertTest, ToFstringFromFTest)
     constexpr auto case2 = tustr::float_value_info(std::numeric_limits<float>::max());
     constexpr auto case3 = tustr::float_value_info(std::numeric_limits<double>::min());
     constexpr auto case4 = tustr::float_value_info(std::numeric_limits<double>::max());
-    ASSERT_EQ(case1.get_e2(), -126);
-    ASSERT_EQ(case2.get_e2(), 127);
-    ASSERT_EQ(case3.get_e2(), -1022);
-    ASSERT_EQ(case4.get_e2(), 1023);
+    constexpr auto case5 = tustr::float_value_info(std::numeric_limits<double>::quiet_NaN());
+    constexpr auto case6 = tustr::float_value_info(std::numeric_limits<double>::infinity());
+    ASSERT_EQ(case1.get_exponent2(), -126);
+    ASSERT_EQ(case2.get_exponent2(), 127);
+    ASSERT_EQ(case3.get_exponent2(), -1022);
+    ASSERT_EQ(case4.get_exponent2(), 1023);
+    ASSERT_TRUE(case1.is_finite());
+    ASSERT_TRUE(case5.is_nan());
+    ASSERT_TRUE(case6.is_inf());
 }
