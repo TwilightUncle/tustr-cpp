@@ -87,5 +87,4 @@ namespace tustr
 #undef TUSTR_FUNC_RETURN_STR_LITERAL
 }
 
-
 #endif

@@ -15,3 +15,15 @@ TEST(TustrConvertTest, ToFstringFromIntTest)
     ASSERT_STREQ(case4.data(), "-0xABCDEF");
     ASSERT_STREQ(case5.data(), L"-0b1010");
 }
+
+TEST(TustrConvertTest, ToFstringFromFTest)
+{
+    constexpr auto case1 = tustr::float_value_info(std::numeric_limits<float>::min());
+    constexpr auto case2 = tustr::float_value_info(std::numeric_limits<float>::max());
+    constexpr auto case3 = tustr::float_value_info(std::numeric_limits<double>::min());
+    constexpr auto case4 = tustr::float_value_info(std::numeric_limits<double>::max());
+    ASSERT_EQ(case1.get_e2(), -126);
+    ASSERT_EQ(case2.get_e2(), 127);
+    ASSERT_EQ(case3.get_e2(), -1022);
+    ASSERT_EQ(case4.get_e2(), 1023);
+}
