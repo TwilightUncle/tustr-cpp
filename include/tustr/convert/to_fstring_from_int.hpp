@@ -47,11 +47,12 @@ namespace tustr
     }
 
     /**
-     * 整数値を文字列に変換
+     * 符号なし整数を文字列に変換
+     * N進数の接頭詞を付けない
     */
-    template <std::integral auto V, unsigned int Hex = 10, class CharT = char, class Traits = std::char_traits<CharT>>
-    requires (V >= 0 && (Hex == 2 || Hex == 8 || Hex == 10 || Hex == 16))
-    constexpr auto to_basic_fstring_from_int()
+    template <std::unsigned_integral auto V, unsigned int Hex = 10, class CharT = char, class Traits = std::char_traits<CharT>>
+    requires (Hex == 2 || Hex == 8 || Hex == 10 || Hex == 16)
+    constexpr auto to_basic_fstring_from_uint_without_hexpreffix()
     {
         constexpr std::size_t len = get_digits_from_int<Hex>(V);
         constexpr auto code_0 = TUSTR_FUNC_RETURN_STR_LITERAL(1, CharT, Traits, '0')[0];
@@ -65,12 +66,26 @@ namespace tustr
                 ? code_0 + static_cast<CharT>(code)
                 : code_A + static_cast<CharT>(code - 10);
         }
-
-        return get_hex_prefix<Hex, CharT, Traits>() + s;
+        return s;
     }
+
+    /**
+     * 整数値を文字列に変換
+    */
     template <std::integral auto V, unsigned int Hex = 10, class CharT = char, class Traits = std::char_traits<CharT>>
-    requires (V < 0)
-    constexpr auto to_basic_fstring_from_int() { return  TUSTR_FUNC_RETURN_STR_LITERAL(1, CharT, Traits, '-') + to_basic_fstring_from_int<-V, Hex, CharT, Traits>(); }
+    requires (Hex == 2 || Hex == 8 || Hex == 10 || Hex == 16)
+    constexpr auto to_basic_fstring_from_int()
+    {
+        if constexpr (V < 0) {
+            return TUSTR_FUNC_RETURN_STR_LITERAL(1, CharT, Traits, '-')
+                + to_basic_fstring_from_int<-V, Hex, CharT, Traits>();
+        } else {
+            using unsigned_t = std::make_unsigned_t<decltype(V)>;
+            constexpr auto casted_v = static_cast<unsigned_t>(V);
+            return get_hex_prefix<Hex, CharT, Traits>()
+                + to_basic_fstring_from_uint_without_hexpreffix<casted_v, Hex, CharT, Traits>();
+        }
+    }
     template <std::integral auto V, unsigned int Hex = 10>
     constexpr auto to_fstring_from_int() { return to_basic_fstring_from_int<V, Hex, char>(); }
     template <std::integral auto V, unsigned int Hex = 10>
