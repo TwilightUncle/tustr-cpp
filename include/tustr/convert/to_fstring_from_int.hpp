@@ -35,17 +35,16 @@ namespace tustr
      * N真数表記の接頭詞を指定
     */
     template <unsigned int Hex, class CharT = char, class Traits = std::char_traits<CharT>>
-    requires (Hex == 2)
-    constexpr auto get_hex_prefix() { return TUSTR_FUNC_RETURN_STR_LITERAL(2, CharT, Traits, "0b"); }
-    template <unsigned int Hex, class CharT = char, class Traits = std::char_traits<CharT>>
-    requires (Hex == 8)
-    constexpr auto get_hex_prefix() { return TUSTR_FUNC_RETURN_STR_LITERAL(1, CharT, Traits, "0"); }
-    template <unsigned int Hex, class CharT = char, class Traits = std::char_traits<CharT>>
-    requires (Hex == 16)
-    constexpr auto get_hex_prefix() { return TUSTR_FUNC_RETURN_STR_LITERAL(2, CharT, Traits, "0x"); }
-    template <unsigned int Hex, class CharT = char, class Traits = std::char_traits<CharT>>
-    requires (Hex == 10)
-    constexpr auto get_hex_prefix() { return TUSTR_FUNC_RETURN_STR_LITERAL(0, CharT, Traits, ""); }
+    constexpr auto get_hex_prefix()
+    {
+        if constexpr (Hex == 2) return TUSTR_FUNC_RETURN_STR_LITERAL(2, CharT, Traits, "0b");
+        else if constexpr (Hex == 8) return  TUSTR_FUNC_RETURN_STR_LITERAL(1, CharT, Traits, "0");
+        else if constexpr (Hex == 16) return TUSTR_FUNC_RETURN_STR_LITERAL(2, CharT, Traits, "0x");
+        else {
+            static_assert(Hex == 10, "Specified invalid 'Hex'.");
+            return TUSTR_FUNC_RETURN_STR_LITERAL(0, CharT, Traits, "");
+        }
+    }
 
     /**
      * 整数値を文字列に変換
