@@ -4,6 +4,7 @@
 #include <bit>
 #include <limits>
 #include <type_traits>
+#include <tuple>
 #include TUSTR_COMMON_INCLUDE(fstring/function.hpp)
 
 namespace tustr
@@ -44,39 +45,27 @@ namespace tustr
         static constexpr int_t exponent_bias = exponent_mask >> (mantissa_digits + 1);
 
         T _v{};
-        bit_store_t _bits{};
-
-        // メモリの内容を抽出したもの
-        int _sign{};
-        bit_store_t _exponent{};
-        bit_store_t _mantissa{};
-
-        // 計算過程用
-        bit_store_t _mf{};
-        int _e2{};
-        int _e10{};
 
         constexpr float_value_info(T v) noexcept
             : _v(v)
-            , _bits(std::bit_cast<bit_store_t, T>(v))
-            , _sign(bool(_bits & sign_mask) ? -1 : 1)
-            , _exponent((_bits & exponent_mask) >> mantissa_digits)
-            , _mantissa(_bits & mantissa_mask)
-            , _mf((bit_store_t(bool(_exponent)) << mantissa_digits) | _mantissa)
-            , _e2(get_exponent2() - mantissa_digits - 2)
-            , _e10(int(_e2 < 0) * _e2)
         {}
 
         constexpr T get_value() const noexcept { return _v; }
         constexpr auto get_exponent2() const noexcept
         {
-            return !_exponent
+            return !get_exponent_bits()
                 ? int_t(1) - exponent_bias
-                : int_t(_exponent) - exponent_bias;
+                : int_t(get_exponent_bits()) - exponent_bias;
         }
-        constexpr bool is_finite() const noexcept { return (_bits & exponent_mask) != exponent_mask; }
-        constexpr bool is_nan() const noexcept { return !is_finite() && _mantissa != 0; }
-        constexpr bool is_inf() const noexcept { return !is_finite() && _mantissa == 0; }
+
+        constexpr bit_store_t get_bits() const noexcept { return std::bit_cast<bit_store_t, T>(_v); }
+        constexpr int_t get_sign() const noexcept { return bool(get_bits() & sign_mask) ? -1 : 1; }
+        constexpr int_t get_exponent_bits() const noexcept { return (get_bits() & exponent_mask) >> mantissa_digits; }
+        constexpr bit_store_t get_mantissa_bits() const noexcept { return get_bits() & mantissa_mask; }
+
+        constexpr bool is_finite() const noexcept { return (get_bits() & exponent_mask) != exponent_mask; }
+        constexpr bool is_nan() const noexcept { return !is_finite() && get_mantissa_bits() != 0; }
+        constexpr bool is_inf() const noexcept { return !is_finite() && get_mantissa_bits() == 0; }
     };
 }
 
